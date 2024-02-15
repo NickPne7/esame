@@ -87,8 +87,7 @@ class CSVTimeSeriesFile(CSVFile):
         
         if lista_date != sorted(lista_date):
             raise ExamException("Il file non contiene dati ordinati")
-            
-            
+              
         return super().get_data()
        
     
@@ -104,7 +103,7 @@ def mediaAnno(times_series, annoInput):
     numero_mesi_validi = 0        
         
     #itero su time series 
-    for row in time_series:
+    for row in times_series:
         try:
             #in questo codice consideriamo solo la 
             #parte dell'anno nel primo elemento di row con una split 
@@ -208,8 +207,8 @@ def compute_increments(time_series, first_year, last_year):
     return dizionario
             
         
-time_series_file = CSVTimeSeriesFile(name="date.csv")
-time_series = time_series_file.get_data()
+#time_series_file = CSVTimeSeriesFile(name="date.csv")
+#time_series = time_series_file.get_data()
 
 
 
