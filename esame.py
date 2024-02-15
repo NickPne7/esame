@@ -123,9 +123,13 @@ def mediaAnno(times_series, annoInput):
         except Exception:
             #se c'è un'eccezione passa all'iterazione successiva
             pass
-
-    media = passeggeri / numero_mesi_validi
-    
+    #può essere che i mesi validi siano 0,
+    #se l'anno è compreso ha passato il test della funzione isinside
+    #allora torno media = 0
+    try:
+        media = passeggeri / numero_mesi_validi
+    except:
+        media = 0
     return media
 
 #funzione che cerca se gli estremi sono nel dataset
@@ -221,10 +225,3 @@ def compute_increments(time_series, first_year, last_year):
             
     return dizionario
             
-        
-#time_series_file = CSVTimeSeriesFile(name="date.csv")
-#time_series = time_series_file.get_data()
-
-#print(time_series)
-#print(mediaAnno(time_series, 1948))
-#print(compute_increments(time_series,"1948","1960"))
