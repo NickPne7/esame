@@ -73,7 +73,7 @@ class CSVTimeSeriesFile(CSVFile):
             my_file.readline()
         except Exception as e:
             self.can_read = False 
-        
+            
         #controlla se il file è ordinato
         
         dataset = super().get_data()
@@ -82,11 +82,9 @@ class CSVTimeSeriesFile(CSVFile):
         for row in dataset:
             lista_date.append(row[0])
         
-        #print(lista_date)
-        #print(lista_date_ordinata)
-        
+        #controllo se è ordinata
         if lista_date != sorted(lista_date):
-            raise ExamException("Il file non contiene dati ordinati")
+            raise ExamException("Il file non contiene dati ordinati o i dati nella colonna data non sono corretti")
               
         return super().get_data()
        
@@ -123,8 +121,9 @@ def mediaAnno(times_series, annoInput):
                 
                 passeggeri = passeggeri + int(row[1])
         except Exception:
+            #se c'è un'eccezione passa all'iterazione successiva
             pass
-        
+
     media = passeggeri / numero_mesi_validi
     
     return media
@@ -149,13 +148,19 @@ def isInside(dati, first_year, last_year):
 #funzione che calcola la variazione media dei passeggieri negli anni
 def compute_increments(time_series, first_year, last_year):
     
+    #-----------------
+    #CONTROLLI INPUT
+    #-----------------
     #controllo se sono stringhe gli input degli estremi
     if not isinstance(first_year, str) or not isinstance(last_year, str):
-        raise ExamException("Gli input non sono validi o non sono stringhe")
+        raise ExamException("Gli input non sono delle stringhe")
     
     #converto in intero i due estremi dell'intervallo
-    first_year = int(first_year)
-    last_year = int(last_year)
+    try:    
+        first_year = int(first_year)
+        last_year = int(last_year)
+    except Exception:
+        raise ExamException("I valori non sono delle stringhe di numeri")
     
     
     #gestione eccezzione
@@ -164,6 +169,10 @@ def compute_increments(time_series, first_year, last_year):
     
     if not isInside(time_series, first_year, last_year):
         raise ExamException("Uno degli intervalli non è contenuto nel data set")
+    
+    #-----------------
+    #FINE CONTROLLO
+    #-----------------
     
     #se l'input considera due anni come intervallo
     #valuto se uno dei due intervalli non ha misurazioni
@@ -189,29 +198,33 @@ def compute_increments(time_series, first_year, last_year):
         annoCorrente = annoCorrente+1
         
         
-    #ciclo principale, formo il dizionario e uso mediaAno per calcolare
+    #ciclo principale, formo il dizionario e uso mediaAnno per calcolare
     #la media fra i due anni di riferimento
-    while annoCorrente != last_year+1:
+    #il ciclo continua finchè annoCorrente non raggiunge l'ultimo anno più uno,
+    #e se il nostro anno+1 è presente nel file
+    while annoCorrente != last_year+1 and isInside(time_series, first_year, annoCorrente+1):
         
         #caso in cui l'anno compreso fra 2 anni abbia media nulla
         #prendo la media del successivo e la tolgo all'attuale
-        if mediaAnno(time_series, annoCorrente+1) == 0:
-            incremento = mediaAnno(time_series, annoCorrente+2) - mediaAnno(time_series, annoCorrente)
-            dizionario.update({str(annoCorrente) + '-' + str(annoCorrente+2):round(incremento,2)})
-            annoCorrente = annoCorrente+2
-        #altrimenti proseguo normalmente
-        else:
-            incremento = mediaAnno(time_series, annoCorrente+1) - mediaAnno(time_series, annoCorrente)
-            dizionario.update({str(annoCorrente) + '-' + str(annoCorrente+1):round(incremento,2)})
-            annoCorrente = annoCorrente+1
+        try:
+            if mediaAnno(time_series, annoCorrente+1) == 0:
+                incremento = mediaAnno(time_series, annoCorrente+2) - mediaAnno(time_series, annoCorrente)
+                dizionario.update({str(annoCorrente) + '-' + str(annoCorrente+2):round(incremento,2)})
+                annoCorrente = annoCorrente+2
+            #altrimenti proseguo normalmente
+            else:
+                incremento = mediaAnno(time_series, annoCorrente+1) - mediaAnno(time_series, annoCorrente)
+                dizionario.update({str(annoCorrente) + '-' + str(annoCorrente+1):round(incremento,2)})
+                annoCorrente = annoCorrente+1
+        except:
+            raise ExamException("")
+            
     return dizionario
             
         
 #time_series_file = CSVTimeSeriesFile(name="date.csv")
 #time_series = time_series_file.get_data()
 
-
-
 #print(time_series)
 #print(mediaAnno(time_series, 1948))
-#print(compute_increments(time_series,"1948","1954"))
+#print(compute_increments(time_series,"1948","1960"))
